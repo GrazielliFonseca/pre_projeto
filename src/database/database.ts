@@ -10,4 +10,6 @@ const db = new Database(dbPath);
 const schema = fs.readFileSync(schemaPath, "utf-8");
 db.exec(schema);
 
+db.pragma("foreign_keys = ON");
+
 export default db;
