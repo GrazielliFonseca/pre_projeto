@@ -3,6 +3,7 @@ export interface Cliente {
   nome: string;
   cpf: string;
   email: string;
+  senha: string;
   telefone: string;
   endereco: string;
   data_nasc: string;

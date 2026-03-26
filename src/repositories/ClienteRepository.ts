@@ -5,12 +5,13 @@ export class ClienteRepository {
   salvar(cliente: Cliente): Cliente {
     const resultado = db
       .prepare(`
-        INSERT INTO clientes (nome, cpf, email, telefone, endereco, data_nasc, id_categoria) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO clientes (nome, cpf, senha, email, telefone, endereco, data_nasc, id_categoria) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .run(
         cliente.nome,
         cliente.cpf,
+        cliente.senha,
         cliente.email,
         cliente.telefone,
         cliente.endereco,

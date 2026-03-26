@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS funcionario (
 CREATE TABLE IF NOT EXISTS fornecedor (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(50) NOT NULL CHECK (length(trim(nome)) > 0),
+    telefone VARCHAR(20),
+    email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
     cnpj VARCHAR(20) UNIQUE NOT NULL 
 );
 
@@ -44,6 +46,7 @@ CREATE TABLE IF NOT EXISTS cliente (
     nome VARCHAR(100) NOT NULL CHECK (length(trim(nome)) > 0),
     cpf VARCHAR(14) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
+    senha TEXT,
     telefone VARCHAR(20),
     rua VARCHAR(100),
     numero VARCHAR(50),

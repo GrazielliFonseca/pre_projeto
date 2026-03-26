@@ -5,10 +5,10 @@ export class FornecedorRepository {
   salvar(fornecedor: Fornecedor): Fornecedor {
     const resultado = db
       .prepare(`
-        INSERT INTO fornecedores (nome, cnpj) 
-        VALUES (?, ?)
+        INSERT INTO fornecedores (nome, cnpj, telefone, email) 
+        VALUES (?, ?, ?, ?)
       `)
-      .run(fornecedor.nome, fornecedor.cnpj);
+      .run(fornecedor.nome, fornecedor.cnpj, fornecedor.telefone, fornecedor.email);
 
     return { 
       ...fornecedor, 
