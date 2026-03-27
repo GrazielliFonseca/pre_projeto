@@ -5,7 +5,13 @@ export interface Cliente {
   email: string;
   senha: string;
   telefone: string;
-  endereco: string;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  cep: string;
   data_nasc: string;
   id_categoria: number;
+  perfil_estilo?: string;
+  total_gasto?: number;
 }

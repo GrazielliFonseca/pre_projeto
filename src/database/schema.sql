@@ -54,7 +54,9 @@ CREATE TABLE IF NOT EXISTS cliente (
     cidade VARCHAR(50),
     cep VARCHAR(9),
     data_nasc VARCHAR(10),
-    id_categoria INT,
+    id_categoria INT DEFAULT 1,
+    perfil_estilo VARCHAR(50) DEFAULT 'Casual',
+    total_gasto DECIMAL(10, 2) DEFAULT 0.00,
     FOREIGN KEY (id_categoria) REFERENCES categoria(id)
 );
 
@@ -62,10 +64,17 @@ CREATE TABLE IF NOT EXISTS pedido (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_cliente INT,
     data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
-    valor_total DECIMAL(10, 2) CHECK (valor_total >= 0),
+    valor_total DECIMAL(10, 2) CHECK (valor_total >= 0) NOT NULL,
     forma_pagto VARCHAR(50) CHECK (forma_pagto IN ('Cartão de Crédito', 'Cartão de Débito', 'Boleto', 'Pix')),
     status VARCHAR(50) CHECK (status IN ('Pendente', 'Finalizado', 'Cancelado')),
     forma_entrega VARCHAR(50) CHECK (forma_entrega IN ('Enviar', 'Retirar na loja')),
+    frete DECIMAL(10, 2) CHECK (frete >= 0) DEFAULT 0.00,
+    cep VARCHAR(9),
+    rua VARCHAR(100),
+    numero VARCHAR(10),
+    bairro VARCHAR(50),
+    cidade VARCHAR(50),
+    estado VARCHAR(50),
     FOREIGN KEY (id_cliente) REFERENCES cliente(id)
 );
 
