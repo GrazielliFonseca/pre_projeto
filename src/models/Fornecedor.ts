@@ -4,4 +4,5 @@ export interface Fornecedor {
   email: string;
   nome: string;
   cnpj: string;
+  prazo_pagto: string;
 }

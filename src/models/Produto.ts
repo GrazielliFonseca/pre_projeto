@@ -12,6 +12,7 @@ export interface Produto {
   custo: number;
   venda: number;
   margem: number;
+  data_entrada: Date | string;
   id_funcionario: number;
   id_fornecedor: number;
 }

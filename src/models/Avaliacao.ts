@@ -4,4 +4,5 @@ export interface Avaliacao {
   id_produto: number;
   estrelas: number;
   descricao: string;
+  data_avaliacao?: Date;
 }

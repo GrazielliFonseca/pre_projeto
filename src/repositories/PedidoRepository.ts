@@ -1,46 +1,49 @@
 import db from "../database/database";
 import { Pedido } from "../models/Pedido";
+import { ItensPedidoRepository } from './ItensPedidoRepository';
 
-export class PedidoRepository {
-  salvar(pedido: Pedido): Pedido {
-    const resultado = db
-      .prepare(`
-        INSERT INTO pedidos (data_pedido, valor_total, status_pedido, id_cliente) 
-        VALUES (?, ?, ?, ?)
-      `)
-      .run(
-        pedido.data_pedido,
-        pedido.valor_total,
-        pedido.status_pedido,
-        pedido.id_cliente
+  export class PedidoRepository {
+  private itensRepo = new ItensPedidoRepository();
+
+  finalizarPedido(dadosVenda: any, sacola: any[]): number | null {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO pedido (
+          id_cliente, valor_total, forma_pagto, status, 
+          forma_entrega, frete, cep, rua, numero, bairro, cidade, estado
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const resultado = stmt.run(
+        dadosVenda.id_cliente,
+        dadosVenda.valor_total,
+        dadosVenda.forma_pagto,
+        'Finalizado', // Status inicial ao pagar
+        dadosVenda.forma_entrega,
+        dadosVenda.frete || 0,
+        dadosVenda.cep,
+        dadosVenda.rua,
+        dadosVenda.numero,
+        dadosVenda.bairro,
+        dadosVenda.cidade,
+        dadosVenda.estado
       );
 
-    return { 
-      ...pedido, 
-      id: Number(resultado.lastInsertRowid) 
-    };
+      const idPedido = Number(resultado.lastInsertRowid);
+
+      for (const item of sacola) {
+        this.itensRepo.salvarItem(idPedido, item);
+      }
+
+      return idPedido;
+    } catch (erro) {
+      console.error("Erro ao finalizar pedido:", erro);
+      return null;
+    }
   }
 
-  listar(): Pedido[] {
-    return db.prepare("SELECT * FROM pedidos").all() as Pedido[];
-  }
-
-  buscarPorId(id: number): Pedido | null {
-    return (db.prepare("SELECT * FROM pedidos WHERE id = ?").get(id) as Pedido) ?? null;
-  }
-
-  listarPorCliente(idCliente: number): Pedido[] {
-    return db.prepare("SELECT * FROM pedidos WHERE id_cliente = ?").all(idCliente) as Pedido[];
-  }
-
-  listarPorStatus(status: string): Pedido[] {
-    return db.prepare("SELECT * FROM pedidos WHERE status_pedido = ?").all(status) as Pedido[];
-  }
-
-  atualizarStatus(id: number, novoStatus: string): boolean {
-    const resultado = db
-      .prepare("UPDATE pedidos SET status_pedido = ? WHERE id = ?")
-      .run(novoStatus, id);
-    return resultado.changes > 0;
+//Adm
+  listarPedidosRecentes(): Pedido[] {
+    return db.prepare("SELECT * FROM pedido ORDER BY data_hora DESC").all() as Pedido[];
   }
 }

@@ -2,15 +2,18 @@ import db from "../database/database";
 import { Funcionario } from "../models/Funcionario";
 
 export class FuncionarioRepository {
-  salvar(funcionario: Funcionario): Funcionario {
+  cadastrarFuncionario(funcionario: Funcionario): Funcionario {
     const resultado = db
       .prepare(`
-        INSERT INTO funcionarios (nome, cargo, nivel_permissao) 
-        VALUES (?, ?, ?)
+        INSERT INTO funcionario (nome, cpf, email, cargo, senha, nivel_permissao) 
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
       .run(
         funcionario.nome,
+        funcionario.cpf,
+        funcionario.email,
         funcionario.cargo,
+        funcionario.senha,
         funcionario.nivel_permissao
       );
 
@@ -21,25 +24,32 @@ export class FuncionarioRepository {
   }
 
   listar(): Funcionario[] {
-    return db.prepare("SELECT * FROM funcionarios").all() as Funcionario[];
+    return db.prepare("SELECT * FROM funcionario").all() as Funcionario[];
   }
 
-  buscarPorId(id: number): Funcionario | null {
-    return (db.prepare("SELECT * FROM funcionarios WHERE id = ?").get(id) as Funcionario) ?? null;
-  }
-
-  listarPorCargo(cargo: string): Funcionario[] {
-    return db.prepare("SELECT * FROM funcionarios WHERE cargo = ?").all(cargo) as Funcionario[];
-  }
-
-  listarPorPermissao(nivel: string): Funcionario[] {
-    return db.prepare("SELECT * FROM funcionarios WHERE nivel_permissao = ?").all(nivel) as Funcionario[];
-  }
-
-  atualizarDados(id: number, cargo: string, nivel: string): boolean {
+  editarFuncionario(funcionario: Funcionario): Funcionario | null {
     const resultado = db
-      .prepare("UPDATE funcionarios SET cargo = ?, nivel_permissao = ? WHERE id = ?")
-      .run(cargo, nivel, id);
+      .prepare(`
+        UPDATE funcionario
+        SET nome = ?, cpf = ?, email = ?, cargo = ?, senha = ?, nivel_permissao = ?
+        WHERE id = ?
+      `)
+      .run(
+        funcionario.nome,
+        funcionario.cpf,
+        funcionario.email,
+        funcionario.cargo,
+        funcionario.senha,
+        funcionario.nivel_permissao,
+        funcionario.id
+      );
+
+    return resultado.changes > 0 ? funcionario : null;
+  }
+
+  excluirFuncionario(id: number): boolean {
+    const resultado = db
+      .prepare(`DELETE FROM funcionario WHERE id = ?`).run(id);
     return resultado.changes > 0;
   }
 }

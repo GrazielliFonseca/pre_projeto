@@ -2,24 +2,39 @@ import db from "../database/database";
 import { Avaliacao } from "../models/Avaliacao";
 
 export class AvaliacaoRepository {
-  salvar(avaliacao: Avaliacao): Avaliacao {
-    const resultado = db
-      .prepare("INSERT INTO avaliacoes (id_cliente, id_produto, estrelas, descricao) VALUES (?, ?, ?, ?)")
-      .run(avaliacao.id_cliente, avaliacao.id_produto, avaliacao.estrelas, avaliacao.descricao);
+  criarAvaliacao(nomeDigitado: string, id_produto: number, nota: number, comentario: string) {
+    const cliente = db.prepare("SELECT id FROM cliente WHERE nome = ?").get(nomeDigitado) as { id: number };
+
+    if (!cliente) {
+      throw new Error("Apenas clientes cadastrados podem avaliar produtos.");
+    }
+
+    const resultado =db.prepare(`
+      INSERT INTO avaliacao (id_cliente, id_produto, estrelas, descricao) 
+      VALUES (?, ?, ?, ?)
+    `).run(cliente.id, id_produto, nota, comentario);
 
     return { 
-      ...avaliacao, 
-      id: Number(resultado.lastInsertRowid) 
+      sucesso: true,
+      id: Number(resultado.lastInsertRowid)
     };
   }
 
-  listarPorProduto(idProduto: number): Avaliacao[] {
-    return db
-      .prepare("SELECT * FROM avaliacoes WHERE id_produto = ? ORDER BY id DESC")
-      .all(idProduto) as Avaliacao[];
+  listarAvaliacaoPorProduto(id_produto: number) {
+  return db.prepare(`
+    SELECT 
+      c.nome, 
+      a.estrelas AS nota, 
+      a.descricao AS comentario,
+      a.data_avaliacao
+    FROM avaliacao a
+    JOIN cliente c ON a.id_cliente = c.id
+    WHERE a.id_produto = ?
+    ORDER BY a.data_avaliacao DESC
+  `).all(id_produto);
   }
 
-  listar(): Avaliacao[] {
-    return db.prepare("SELECT * FROM avaliacoes").all() as Avaliacao[];
+  listarAvaliacao(): Avaliacao[] {
+    return db.prepare("SELECT * FROM avaliacao").all() as Avaliacao[];
   }
 }

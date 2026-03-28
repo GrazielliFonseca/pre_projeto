@@ -3,4 +3,6 @@ export interface ItensPedido {
   id_pedido: number;
   id_produto: number;
   qtd: number;
+  cor: string;
+  tamanho: string;
 }

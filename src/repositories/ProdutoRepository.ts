@@ -2,14 +2,14 @@ import db from "../database/database";
 import { Produto } from "../models/Produto";
 
 export class ProdutoRepository {
-  salvar(produto: Produto): Produto {
+  cadastrarProduto(produto: Produto): Produto {
     const resultado = db
       .prepare(`
-        INSERT INTO produtos (
-          nome, descricao, categoria, tamanho, cor, marca, sku, 
-          qtd, estoque_min, custo, venda, margem, id_funcionario, id_fornecedor
+        INSERT INTO produto (
+          nome, descricao, categoria, tamanho, cor, sku, 
+          qtd, estoque_min, custo, venda, id_fornecedor, data_entrada
         ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .run(
         produto.nome,
@@ -17,15 +17,13 @@ export class ProdutoRepository {
         produto.categoria,
         produto.tamanho,
         produto.cor,
-        produto.marca,
         produto.sku,
         produto.qtd,
         produto.estoque_min,
         produto.custo,
         produto.venda,
-        produto.margem,
-        produto.id_funcionario,
-        produto.id_fornecedor
+        produto.id_fornecedor,
+        produto.data_entrada instanceof Date ? produto.data_entrada.toISOString() : produto.data_entrada
       );
 
     return { 
@@ -34,30 +32,85 @@ export class ProdutoRepository {
     };
   }
 
+//Site
   listar(): Produto[] {
-    return db.prepare("SELECT * FROM produtos").all() as Produto[];
+    return db.prepare("SELECT * FROM produto").all() as Produto[];
   }
 
-  buscarPorId(id: number): Produto | null {
-    return (db.prepare("SELECT * FROM produtos WHERE id = ?").get(id) as Produto) ?? null;
+  filtrarPorCategoria(categoria: string): Produto[] {
+    return db.prepare("SELECT * FROM produto WHERE categoria = ?").all(categoria) as Produto[];
+  }
+  
+  buscarPorNome(nome: string): Produto[] {
+    return db.prepare("SELECT * FROM produto WHERE nome LIKE ?").all(`%${nome}%`) as Produto[];
   }
 
-  buscarPorSku(sku: string): Produto | null {
-    return (db.prepare("SELECT * FROM produtos WHERE sku = ?").get(sku) as Produto) ?? null;
+  buscarPorCategoria(categoria: string): Produto[] {
+    return db.prepare("SELECT * FROM produto WHERE categoria = ?").all(categoria) as Produto[];
   }
 
-  listarPorCategoria(categoria: string): Produto[] {
-    return db.prepare("SELECT * FROM produtos WHERE categoria = ?").all(categoria) as Produto[];
+//Adm
+  listarProdutosCadastrados(): Produto[] {
+    return db.prepare("SELECT * FROM produto").all() as Produto[];
   }
 
-  listarProdutosParaRepor(): Produto[] {
-    return db.prepare("SELECT * FROM produtos WHERE qtd <= estoque_min").all() as Produto[];
-  }
+  mostrarDescricao(id: number): string | null {
+    const resultado = db.prepare("SELECT descricao FROM produto WHERE id = ?").get(id) as { descricao: string } | undefined;
+    return resultado ? resultado.descricao : null;
+}
 
-  atualizarPreco(id: number, novoPreco: number, novaMargem: number): boolean {
+  editarProduto(produto: Produto): Produto | null {
     const resultado = db
-      .prepare("UPDATE produtos SET venda = ?, margem = ? WHERE id = ?")
-      .run(novoPreco, novaMargem, id);
+      .prepare(`
+        UPDATE produto
+        SET nome = ?, descricao = ?, categoria = ?, tamanho = ?, cor = ?, sku = ?,
+            qtd = ?, estoque_min = ?, custo = ?, venda = ?, id_fornecedor = ?, data_entrada = ?
+        WHERE id = ?
+      `)
+      .run(
+        produto.nome,
+        produto.descricao,
+        produto.categoria,
+        produto.tamanho,
+        produto.cor,
+        produto.sku,
+        produto.qtd,
+        produto.estoque_min,
+        produto.custo,
+        produto.venda,
+        produto.id_fornecedor,
+        produto.data_entrada instanceof Date ? produto.data_entrada.toISOString() : produto.data_entrada,
+        produto.id
+      );
+
+    return resultado.changes > 0 ? produto : null;
+  }
+
+  aplicarDesconto(id: number, valorDesconto: number): boolean {
+  const resultado = db
+    .prepare(`
+      UPDATE produto
+      SET venda = venda - (venda * (? / 100.0)) 
+      WHERE id = ?
+    `)
+    .run(valorDesconto, id);
+
+  return resultado.changes > 0;
+  }
+
+  excluirProduto(id: number): boolean {
+    const resultado = db.prepare("DELETE FROM produto WHERE id = ?").run(id);
     return resultado.changes > 0;
+  }
+
+  liquidacaoAutomatica(): void {
+    db.prepare(`
+      UPDATE produto
+      SET venda = venda * 0.8
+      WHERE id IN (
+        SELECT id FROM produto
+        WHERE qtd > 0 AND DATEDIFF(CURRENT_DATE, data_ultima_venda) > 15
+      )
+    `).run();
   }
 }

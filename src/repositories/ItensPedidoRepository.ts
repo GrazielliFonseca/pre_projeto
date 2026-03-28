@@ -1,31 +1,11 @@
 import db from "../database/database";
-import { ItensPedido } from "../models/ItensPedido";
 
 export class ItensPedidoRepository {
-  salvar(item: ItensPedido): ItensPedido {
-    const resultado = db
-      .prepare(`
-        INSERT INTO itens_pedido (id_pedido, id_produto, qtd) 
-        VALUES (?, ?, ?)
-      `)
-      .run(
-        item.id_pedido,
-        item.id_produto,
-        item.qtd
-      );
-
-    return { 
-      ...item, 
-      id: Number(resultado.lastInsertRowid) 
-    };
-  }
-
-  listarPorPedido(idPedido: number): ItensPedido[] {
-    return db.prepare("SELECT * FROM itens_pedido WHERE id_pedido = ?").all(idPedido) as ItensPedido[];
-  }
-
-  listarPorProduto(idProduto: number): ItensPedido[] {
-    return db.prepare("SELECT * FROM itens_pedido WHERE id_produto = ?").all(idProduto) as ItensPedido[];
+  salvarItem(idPedido: number, item: any): void {
+    db.prepare(`
+      INSERT INTO itens_pedido (id_pedido, id_produto, qtd, valor_unitario, cor, tamanho)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(idPedido, item.id_produto, item.qtd, item.valor_unitario, item.cor, item.tamanho);
   }
 
   removerItem(id: number): boolean {

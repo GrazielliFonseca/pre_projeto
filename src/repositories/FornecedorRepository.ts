@@ -2,13 +2,13 @@ import db from "../database/database";
 import { Fornecedor } from "../models/Fornecedor";
 
 export class FornecedorRepository {
-  salvar(fornecedor: Fornecedor): Fornecedor {
+  cadastrarFornecedor(fornecedor: Fornecedor): Fornecedor {
     const resultado = db
       .prepare(`
-        INSERT INTO fornecedores (nome, cnpj, telefone, email) 
-        VALUES (?, ?, ?, ?)
+        INSERT INTO fornecedor (nome, cnpj, telefone, email, prazo_pagto) 
+        VALUES (?, ?, ?, ?, ?)
       `)
-      .run(fornecedor.nome, fornecedor.cnpj, fornecedor.telefone, fornecedor.email);
+      .run(fornecedor.nome, fornecedor.cnpj, fornecedor.telefone, fornecedor.email, fornecedor.prazo_pagto);
 
     return { 
       ...fornecedor, 
@@ -17,18 +17,23 @@ export class FornecedorRepository {
   }
 
   listar(): Fornecedor[] {
-    return db.prepare("SELECT * FROM fornecedores").all() as Fornecedor[];
+    return db.prepare("SELECT * FROM fornecedor").all() as Fornecedor[];
   }
 
-  buscarPorId(id: number): Fornecedor | null {
-    return (db.prepare("SELECT * FROM fornecedores WHERE id = ?").get(id) as Fornecedor) ?? null;
+  editarFornecedor(fornecedor: Fornecedor): Fornecedor | null {
+    const resultado = db
+      .prepare(`
+        UPDATE fornecedor
+        SET nome = ?, cnpj = ?, telefone = ?, email = ?, prazo_pagto = ?
+        WHERE id = ?
+      `)
+      .run(fornecedor.nome, fornecedor.cnpj, fornecedor.telefone, fornecedor.email, fornecedor.prazo_pagto, fornecedor.id);
+
+    return resultado.changes > 0 ? fornecedor : null;
   }
 
-  buscarPorCnpj(cnpj: string): Fornecedor | null {
-    return (db.prepare("SELECT * FROM fornecedores WHERE cnpj = ?").get(cnpj) as Fornecedor) ?? null;
-  }
-
-  buscarPorNome(nome: string): Fornecedor[] {
-    return db.prepare("SELECT * FROM fornecedores WHERE nome LIKE ?").all(`%${nome}%`) as Fornecedor[];
+  excluirFornecedor(id: number): boolean {
+    const resultado = db.prepare("DELETE FROM fornecedor WHERE id = ?").run(id);
+    return resultado.changes > 0;
   }
 }

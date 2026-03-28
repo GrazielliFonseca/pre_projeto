@@ -8,7 +8,10 @@ CREATE TABLE IF NOT EXISTS categoria (
 CREATE TABLE IF NOT EXISTS funcionario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(50) NOT NULL CHECK (length(trim(nome)) > 0),
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
     cargo VARCHAR (50) CHECK (cargo IN ('Adm', 'Gerente', 'Estoquista', 'Vendedor')),
+    senha TEXT NOT NULL,
     nivel_permissao VARCHAR (50) CHECK (nivel_permissao IN ('Total', 'Restrito'))
 );
 
@@ -17,7 +20,8 @@ CREATE TABLE IF NOT EXISTS fornecedor (
     nome VARCHAR(50) NOT NULL CHECK (length(trim(nome)) > 0),
     telefone VARCHAR(20),
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
-    cnpj VARCHAR(20) UNIQUE NOT NULL 
+    cnpj VARCHAR(20) UNIQUE NOT NULL,
+    prazo_pagto VARCHAR(20) NOT NULL CHECK (length(trim(prazo_pagto)) > 0)
 );
 
 CREATE TABLE IF NOT EXISTS produto (
@@ -34,6 +38,7 @@ CREATE TABLE IF NOT EXISTS produto (
     custo DECIMAL(10, 2) CHECK (custo >= 0),
     venda DECIMAL(10, 2) CHECK (venda >= 0),
     margem DECIMAL(10, 2),
+    data_entrada DATETIME DEFAULT CURRENT_TIMESTAMP,
     id_funcionario INT,
     id_fornecedor INT,
     FOREIGN KEY (id_funcionario) REFERENCES funcionario(id),
@@ -46,7 +51,7 @@ CREATE TABLE IF NOT EXISTS cliente (
     nome VARCHAR(100) NOT NULL CHECK (length(trim(nome)) > 0),
     cpf VARCHAR(14) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
-    senha TEXT,
+    senha TEXT NOT NULL,
     telefone VARCHAR(20),
     rua VARCHAR(100),
     numero VARCHAR(50),
@@ -85,6 +90,8 @@ CREATE TABLE IF NOT EXISTS itens_pedido (
     qtd INT CHECK (qtd > 0),
     valor_unitario DECIMAL(10,2) CHECK (valor_unitario >= 0),
     FOREIGN KEY (id_pedido) REFERENCES pedido(id),
+    cor VARCHAR(20),
+    tamanho VARCHAR(20),
     FOREIGN KEY (id_produto) REFERENCES produto(id)
 );
 
@@ -107,6 +114,7 @@ CREATE TABLE IF NOT EXISTS avaliacao (
     id_produto INT,
     estrelas INT CHECK (estrelas BETWEEN 1 AND 5),
     descricao VARCHAR(100),
+    data_avaliacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_cliente) REFERENCES cliente(id),
     FOREIGN KEY (id_produto) REFERENCES produto(id)
 );
