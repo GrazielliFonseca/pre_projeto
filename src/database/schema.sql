@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS categoria (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(50) NOT NULL CHECK (length(trim(nome)) > 0),
     beneficios VARCHAR(100),
-    preco DECIMAL(10, 2) CHECK (preco >= 0)
+    valor_minimo DECIMAL(10, 2) DEFAULT 0.0,
+    desconto DECIMAL(5, 2) DEFAULT 0.0
 );
 
 CREATE TABLE IF NOT EXISTS funcionario (
@@ -10,15 +11,15 @@ CREATE TABLE IF NOT EXISTS funcionario (
     nome VARCHAR(50) NOT NULL CHECK (length(trim(nome)) > 0),
     cpf VARCHAR(14) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
-    cargo VARCHAR (50) CHECK (cargo IN ('Adm', 'Gerente', 'Estoquista', 'Vendedor')),
+    cargo VARCHAR (50) NOT NULL,
     senha TEXT NOT NULL,
-    nivel_permissao VARCHAR (50) CHECK (nivel_permissao IN ('Total', 'Restrito'))
+    nivel_permissao VARCHAR (50) CHECK (nivel_permissao IN ('Total', 'Restrito')) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS fornecedor (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(50) NOT NULL CHECK (length(trim(nome)) > 0),
-    telefone VARCHAR(20),
+    telefone VARCHAR(20) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
     cnpj VARCHAR(20) UNIQUE NOT NULL,
     prazo_pagto VARCHAR(20) NOT NULL CHECK (length(trim(prazo_pagto)) > 0)
@@ -27,16 +28,16 @@ CREATE TABLE IF NOT EXISTS fornecedor (
 CREATE TABLE IF NOT EXISTS produto (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(100) NOT NULL CHECK (length(trim(nome)) > 0),
-    descricao VARCHAR(255),
-    categoria VARCHAR(50),
-    tamanho VARCHAR(20),
-    cor VARCHAR(20),
-    marca VARCHAR(50),
-    sku VARCHAR(50) UNIQUE,
-    qtd INT DEFAULT 0 CHECK (qtd >= 0),
-    estoque_min INT DEFAULT 5 CHECK (estoque_min >= 0),
-    custo DECIMAL(10, 2) CHECK (custo >= 0),
-    venda DECIMAL(10, 2) CHECK (venda >= 0),
+    descricao VARCHAR(255) NOT NULL CHECK (length(trim(descricao)) > 0),
+    categoria VARCHAR(50) NOT NULL,
+    tamanho VARCHAR(20) NOT NULL,
+    cor VARCHAR(20) NOT NULL,
+    marca VARCHAR(50) NOT NULL,
+    sku VARCHAR(50) UNIQUE NOT NULL,
+    qtd INT NOT NULL DEFAULT 0 CHECK (qtd >= 0),
+    estoque_min INT NOT NULL DEFAULT 5 CHECK (estoque_min >= 0),
+    custo DECIMAL(10, 2) NOT NULL CHECK (custo >= 0),
+    venda DECIMAL(10, 2) NOT NULL CHECK (venda >= 0),
     margem DECIMAL(10, 2),
     data_entrada DATETIME DEFAULT CURRENT_TIMESTAMP,
     id_funcionario INT,
@@ -77,6 +78,7 @@ CREATE TABLE IF NOT EXISTS pedido (
     cep VARCHAR(9),
     rua VARCHAR(100),
     numero VARCHAR(10),
+    complemento VARCHAR(100),
     bairro VARCHAR(50),
     cidade VARCHAR(50),
     estado VARCHAR(50),
@@ -99,13 +101,11 @@ CREATE TABLE IF NOT EXISTS movimento_estoque (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_produto INT,
     id_funcionario INT,
-    id_pedido INT,
     tipo_movimentacao VARCHAR(50) CHECK (tipo_movimentacao IN ('Entrada', 'Saída', 'Ajuste', 'Devolução')),
     qtd INT NOT NULL,
     data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_produto) REFERENCES produto(id),
-    FOREIGN KEY (id_funcionario) REFERENCES funcionario(id),
-    FOREIGN KEY (id_pedido) REFERENCES pedido(id)
+    FOREIGN KEY (id_funcionario) REFERENCES funcionario(id)
 );
 
 CREATE TABLE IF NOT EXISTS avaliacao (
