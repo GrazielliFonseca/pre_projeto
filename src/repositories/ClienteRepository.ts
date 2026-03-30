@@ -6,7 +6,7 @@ export interface ClienteOfertaDTO {
   ultima_compra: string;
   total_gasto: number;
   perfil_estilo: string;
-  fidelidade: string; // Nome da categoria (Ex: Elite)
+  fidelidade: string; // Nome da categoria
   beneficio: string;
 }
 
@@ -40,18 +40,26 @@ export class ClienteRepository {
 
     if (!cliente) return;
 
-    let novaCategoria = 1; // Casual (Padrão)
+    let novaCategoria = 1; // Casual
 
     if (cliente.total_gasto >= 300) {
-      novaCategoria = 3; // Elite (20% desconto + Frete Grátis)
+      novaCategoria = 3; // Elite 
     } else if (cliente.total_gasto >= 150) {
-      novaCategoria = 2; // Premium (10% desconto)
+      novaCategoria = 2; // Premium 
     }
 
     db.prepare("UPDATE cliente SET id_categoria = ? WHERE id = ?")
       .run(novaCategoria, idCliente);
 
     console.log(`[Status] Categoria do cliente ${idCliente} verificada/atualizada.`);
+  }
+
+  buscarPorId(id: number) {
+    const cliente = db.prepare("SELECT * FROM cliente WHERE id = ?").get(id);
+    
+    if (!cliente) return null;
+    
+    return cliente; 
   }
 
 //Adm
