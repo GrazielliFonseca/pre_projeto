@@ -1,7 +1,7 @@
 import db from "../database/database";
 import { Cliente } from "../models/Cliente";
 
-export interface ClienteOfertaDTO {
+export interface ClienteOferta {
   nome: string;
   ultima_compra: string;
   total_gasto: number;
@@ -63,7 +63,7 @@ export class ClienteRepository {
   }
 
 //Adm
-  listarClientesInativos(): ClienteOfertaDTO[] {
+  listarClientesInativos(): ClienteOferta[] {
     const sql = `
       SELECT 
         c.nome, 
@@ -77,7 +77,7 @@ export class ClienteRepository {
       WHERE DATEDIFF(CURRENT_DATE, c.data_ultima_compra) > 35
     `;
 
-    const clientes = db.prepare(sql).all() as ClienteOfertaDTO[];
+    const clientes = db.prepare(sql).all() as ClienteOferta[];
     return clientes;
   }
 
