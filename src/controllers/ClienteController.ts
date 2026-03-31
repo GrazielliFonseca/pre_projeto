@@ -9,10 +9,9 @@ export function ClienteController() {
     try {
       const dadosCliente = req.body;
 
-      if (!dadosCliente.nome || !dadosCliente.cpf || !dadosCliente.senha) {
-        throw new Error("Campos obrigatórios (nome, cpf, senha) estão faltando.");
-      }
-
+      if (!dadosCliente.nome || !dadosCliente.cpf || !dadosCliente.senha || !dadosCliente.telefone || !dadosCliente.data_nasc) {
+      throw new Error("Campos obrigatórios (nome, cpf, senha, telefone, data_nasc) estão faltando.");
+    }
       const novoCliente = repository.criarConta(dadosCliente);
       res.status(201).json({
         mensagem: "Conta criada com sucesso!",

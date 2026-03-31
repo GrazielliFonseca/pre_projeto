@@ -17,10 +17,10 @@ export function FornecedorController() {
   app.post("/fornecedores", (req, res) => {
     try {
       const dados = req.body;
-
-      if (!dados.nome || !dados.cnpj) {
-        throw new Error("Nome e CNPJ são obrigatórios.");
-      }
+      
+      if (!dados.nome || !dados.cnpj || !dados.prazo_pagto) {
+      throw new Error("Nome, CNPJ e Prazo de Pagamento são obrigatórios.");
+    }
 
       const novoFornecedor = repository.cadastrarFornecedor(dados);
       res.status(201).json(novoFornecedor);
